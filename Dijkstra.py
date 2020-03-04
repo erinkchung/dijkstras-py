@@ -5,44 +5,40 @@ info = sys.stdin.readlines()
 graph_info = info[0].split()
 num_nodes = int(graph_info[0])
 num_edges = int(graph_info[1])
-origin_node = int(graph_info[2])
-edges = info[1:] #store edge array
-adjacency_list = [[] for i in range(num_nodes)] #initialize adjacency list
+uber_origin = int(graph_info[2])
+edges = info[1:]
+adjacency_list = [[] for i in range(num_nodes)]
 
 #construct adjacency list
 for e in edges:
-	e = e.split() #since edges are given as string
-	origin = int(e[0]) #node where directed edge starts
-	destination = int(e[1]) #node where directed edge ends
+	e = e.split()
+	origin = int(e[0])
+	destination = int(e[1])
 	weight = int(e[2])
 	adjacency_list[origin].append([weight,destination])
-	#modify adjacency list sub-list corresponding to origin node adding destination node
 
-distances = [float('inf') for i in range(num_nodes)]
-explored = []
+distances = [float('inf') for i in range(num_nodes)] #for all nodes set distance from origin to infinity
+distances[uber_origin] = 0 #except origin node itself
 distances_heap = []
-heapq.heappush(distances_heap, [0, origin_node])
-explored.append(origin_node)
+heapq.heappush(distances_heap, [0, uber_origin]) #priority queue for getting min distance nodes
+parents = [[None] for i in range(num_nodes)]
 
-while(len(explored)<num_nodes and not distances_heap==[]):
+while not distances_heap==[]:
 	curr = heapq.heappop(distances_heap)
-	curr = curr[1]
-	for neighbour in adjacency_list[curr]:
+	curr_node = int(curr[1])
+	curr_distance = int(curr[0])
+	for neighbour in adjacency_list[curr_node]:
 		[weigh, neigh] = neighbour
-		print('now explored', explored)
-		print('currently examining neighbour', neigh, 'of node', curr)
-		print('current distances heap', distances_heap, '\n')
-		if neigh==origin_node or neigh in explored:
+		if neighbour==uber_origin:
 			continue
+		elif distances[neigh] == float('inf') or weigh + curr_distance < distances[neigh]:
+			parents[neigh].append(curr_node)
+			distances[neigh] = curr_distance + weigh
 		else:
-			if distances[neigh] == float('inf'):
-				distances[neigh] = weigh
-			else:
-				distances[neigh] += weigh
+			continue
 		heapq.heappush(distances_heap, [distances[neigh], neigh])
-		heapq.heapify(distances_heap)
-		explored.append(neigh)
 
-print('final distances from node', origin_node, ':', distances)
-print('final distances heap', distances_heap)
-print('explored by the end', explored)
+for n in range(num_nodes):
+	parent = parents[n].pop()
+	if parent != None:
+		print(n, distances[n], parent)
